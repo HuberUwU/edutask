@@ -11,18 +11,30 @@ function Upload() {
   const [isUploading, setIsUploading] = useState(false);
   const [publishedTasks, setPublishedTasks] = useState([]);
   const [loadingTasks, setLoadingTasks] = useState(true);
-  
+
   const navigate = useNavigate();
 
   useEffect(() => {
     let isMounted = true;
     const fetchTasks = async () => {
       try {
-        const tasks = await rtdb.getAll('tasks');
+        const localTasks = JSON.parse(localStorage.getItem('cobaem_published_tasks') || '[]');
         if (isMounted) {
-          setPublishedTasks(tasks ? tasks.reverse() : []);
-          setLoadingTasks(false);
+          setPublishedTasks(localTasks);
+          setLoadingTasks(localTasks.length === 0);
         }
+
+        // Try getting from firebase without blocking the UI if it hangs
+        rtdb.getAll('tasks').then(fbTasks => {
+          if (!isMounted) return;
+          const allTasks = [...fbTasks, ...localTasks];
+          const uniqueTasks = Array.from(new Map(allTasks.map(item => [item.id, item])).values());
+          setPublishedTasks(uniqueTasks);
+          setLoadingTasks(false);
+        }).catch(err => {
+          console.warn('Firebase read error/timeout:', err);
+          if (isMounted) setLoadingTasks(false);
+        });
       } catch (error) {
         console.error("Error fetching tasks:", error);
         if (isMounted) setLoadingTasks(false);
@@ -50,18 +62,23 @@ function Upload() {
         fileSize: 'Enlace',
         date: new Date().toLocaleDateString('es-MX', { 
           year: 'numeric', month: 'long', day: 'numeric',
-          hour: '2-digit', minute:'2-digit'
+          hour: '2-digit', minute: '2-digit'
         })
       };
 
-      await rtdb.setWithId(`tasks/task_${taskId}`, taskData);
+      // Guardamos en local para asegurar respuesta rápida sin bloqueos
+      const existingTasks = JSON.parse(localStorage.getItem('cobaem_published_tasks') || '[]');
+      localStorage.setItem('cobaem_published_tasks', JSON.stringify([taskData, ...existingTasks]));
+
+      // Guardamos en Firebase pero NO lo esperamos (evita colgarlo si Firebase falla)
+      rtdb.setWithId(`tasks/task_${taskId}`, taskData).catch(err => console.warn('Firebase write warning:', err));
       
       setIsUploading(false);
       navigate(`/success/${taskId}`);
     } catch (error) {
-      console.error("Error al guardar la tarea en Firebase:", error);
+      console.error("Error al procesar la tarea:", error);
       setIsUploading(false);
-      alert("Hubo un error al guardar la tarea. Revisa tu conexión.");
+      alert("Hubo un error local al preparar el trabajo.");
     }
   };
 
@@ -83,10 +100,10 @@ function Upload() {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label" htmlFor="taskName">Nombre de la Tarea / Tema</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 id="taskName"
-                className="form-control" 
+                className="form-control"
                 placeholder="Ej. Línea del Tiempo Independencia"
                 value={taskName}
                 onChange={(e) => setTaskName(e.target.value)}
@@ -96,9 +113,9 @@ function Upload() {
 
             <div className="form-group">
               <label className="form-label" htmlFor="description">Descripción (Opcional)</label>
-              <textarea 
+              <textarea
                 id="description"
-                className="form-control" 
+                className="form-control"
                 placeholder="Añade instrucciones, grupo, grado o notas extras..."
                 rows={3}
                 value={description}
@@ -108,10 +125,10 @@ function Upload() {
 
             <div className="form-group" style={{ marginBottom: '1.5rem' }}>
               <label className="form-label" htmlFor="linkUrl">Enlace Externo de la Tarea</label>
-              <input 
-                type="url" 
+              <input
+                type="url"
                 id="linkUrl"
-                className="form-control" 
+                className="form-control"
                 placeholder="Ej. https://docs.google.com/..."
                 value={linkUrl}
                 onChange={(e) => setLinkUrl(e.target.value)}
@@ -119,9 +136,9 @@ function Upload() {
               />
             </div>
 
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
+            <button
+              type="submit"
+              className="btn btn-primary"
               style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
               disabled={!taskName || !linkUrl || isUploading}
             >
@@ -139,13 +156,13 @@ function Upload() {
         {/* --- RECENT TASKS / QRs --- */}
         <div>
           <h2 style={{ color: 'var(--primary)', fontSize: '1.6rem', marginBottom: '1.5rem', textAlign: 'center' }}>
-            Trabajos Publicados Recientemente
+            Trabajos Publicados
           </h2>
 
           {loadingTasks ? (
             <div style={{ textAlign: 'center', padding: '2rem' }}>
-               <Loader2 className="loader" size={32} style={{ display: 'inline-block', color: 'var(--primary)', margin: '0 auto' }} />
-               <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>Cargando trabajos...</p>
+              <Loader2 className="loader" size={32} style={{ display: 'inline-block', color: 'var(--primary)', margin: '0 auto' }} />
+              <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>Cargando trabajos...</p>
             </div>
           ) : publishedTasks.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '2rem', background: 'white', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
@@ -163,8 +180,8 @@ function Upload() {
                   </div>
 
                   <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
-                    <QRCodeSVG 
-                      value={task.fileName} 
+                    <QRCodeSVG
+                      value={task.fileName}
                       size={140}
                       fgColor="#0f1c3f"
                       bgColor="#ffffff"
@@ -172,7 +189,7 @@ function Upload() {
                       includeMargin={false}
                     />
                   </div>
-                  
+
                   <div style={{ width: '100%', marginTop: 'auto', display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
                     <a href={task.fileName} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', fontSize: '0.9rem' }}>
                       <LinkIcon size={16} /> Abrir Enlace

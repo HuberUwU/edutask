@@ -13,20 +13,30 @@ function TaskView() {
     let isMounted = true;
     
     const loadTask = async () => {
-      try {
-        const tasks = await rtdb.getAll('tasks');
-        const task = tasks.find(t => t.id === taskId);
-        
+      const localTasks = JSON.parse(localStorage.getItem('cobaem_published_tasks') || '[]');
+      const localMatch = localTasks.find(t => t.id === taskId);
+      
+      if (localMatch) {
         if (isMounted) {
-          if (task) {
-            setTaskData(task);
-          }
+          setTaskData(localMatch);
           setLoading(false);
         }
-      } catch (error) {
-        console.error("Error fetching task", error);
-        if (isMounted) {
-          setLoading(false);
+      } else {
+        try {
+          const tasks = await rtdb.getAll('tasks');
+          const task = tasks.find(t => t.id === taskId);
+          
+          if (isMounted) {
+            if (task) {
+              setTaskData(task);
+            }
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error("Error fetching task", error);
+          if (isMounted) {
+            setLoading(false);
+          }
         }
       }
     };
