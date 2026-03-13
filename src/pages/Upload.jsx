@@ -18,23 +18,11 @@ function Upload() {
     let isMounted = true;
     const fetchTasks = async () => {
       try {
-        const localTasks = JSON.parse(localStorage.getItem('cobaem_published_tasks') || '[]');
+        const tasks = await rtdb.getAll('tasks');
         if (isMounted) {
-          setPublishedTasks(localTasks);
-          setLoadingTasks(localTasks.length === 0);
-        }
-
-        // Try getting from firebase without blocking the UI if it hangs
-        rtdb.getAll('tasks').then(fbTasks => {
-          if (!isMounted) return;
-          const allTasks = [...fbTasks, ...localTasks];
-          const uniqueTasks = Array.from(new Map(allTasks.map(item => [item.id, item])).values());
-          setPublishedTasks(uniqueTasks);
+          setPublishedTasks(tasks ? tasks.reverse() : []);
           setLoadingTasks(false);
-        }).catch(err => {
-          console.warn('Firebase read error/timeout:', err);
-          if (isMounted) setLoadingTasks(false);
-        });
+        }
       } catch (error) {
         console.error("Error fetching tasks:", error);
         if (isMounted) setLoadingTasks(false);
@@ -66,19 +54,14 @@ function Upload() {
         })
       };
 
-      // Guardamos en local para asegurar respuesta rápida sin bloqueos
-      const existingTasks = JSON.parse(localStorage.getItem('cobaem_published_tasks') || '[]');
-      localStorage.setItem('cobaem_published_tasks', JSON.stringify([taskData, ...existingTasks]));
-
-      // Guardamos en Firebase pero NO lo esperamos (evita colgarlo si Firebase falla)
-      rtdb.setWithId(`tasks/task_${taskId}`, taskData).catch(err => console.warn('Firebase write warning:', err));
+      await rtdb.setWithId(`tasks/task_${taskId}`, taskData);
       
       setIsUploading(false);
       navigate(`/success/${taskId}`);
     } catch (error) {
       console.error("Error al procesar la tarea:", error);
       setIsUploading(false);
-      alert("Hubo un error local al preparar el trabajo.");
+      alert("Hubo un error de conexión al guardar el trabajo en Firebase.");
     }
   };
 

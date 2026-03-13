@@ -14,7 +14,8 @@ import {
   CheckSquare,
   Link as LinkIcon
 } from 'lucide-react';
-import { rtdb } from '../firebase';
+import { db, rtdb } from '../firebase';
+import { get, ref, child, set as setDb } from 'firebase/database';
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState('tasks'); // 'tasks', 'teachers', 'subjects'
@@ -47,28 +48,34 @@ function Dashboard() {
         console.error("Error cargando tareas:", err);
       }
 
-      // Load Subjects
-      let currentSubjects = [];
-      const storedSubjects = localStorage.getItem('cobaem_subjects');
-      if (storedSubjects) {
-        currentSubjects = JSON.parse(storedSubjects);
-        setSubjects(currentSubjects);
-      } else {
-        currentSubjects = ['Matemáticas I', 'Taller de Lectura y Redacción', 'Química Básica', 'Informática'];
-        setSubjects(currentSubjects);
-        localStorage.setItem('cobaem_subjects', JSON.stringify(currentSubjects));
+      // 2. Load Subjects from Firebase
+      try {
+        const snapS = await get(child(ref(db), 'config/subjects'));
+        if (snapS.exists()) {
+          if (isMounted) setSubjects(snapS.val());
+        } else {
+          const defS = ['Matemáticas I', 'Taller de Lectura y Redacción', 'Química Básica', 'Informática'];
+          if (isMounted) setSubjects(defS);
+          setDb(ref(db, 'config/subjects'), defS);
+        }
+      } catch (err) {
+        console.error("Error cargando materias:", err);
       }
 
-      // Load Teachers
-      const storedTeachers = localStorage.getItem('cobaem_teachers_v2');
-      if (storedTeachers) {
-        setTeachers(JSON.parse(storedTeachers));
-      } else {
-        const defaultTeachers = [
-          { name: 'Profesor Prueba', subjects: ['Matemáticas I', 'Informática'] },
-        ];
-        setTeachers(defaultTeachers);
-        localStorage.setItem('cobaem_teachers_v2', JSON.stringify(defaultTeachers));
+      // 3. Load Teachers from Firebase
+      try {
+        const snapT = await get(child(ref(db), 'config/teachers'));
+        if (snapT.exists()) {
+          if (isMounted) setTeachers(snapT.val());
+        } else {
+          const defT = [
+            { name: 'Profesor Prueba', subjects: ['Matemáticas I', 'Informática'] },
+          ];
+          if (isMounted) setTeachers(defT);
+          setDb(ref(db, 'config/teachers'), defT);
+        }
+      } catch (err) {
+        console.error("Error cargando profesores:", err);
       }
 
       if (isMounted) {
@@ -98,7 +105,7 @@ function Dashboard() {
     }
     const updated = [...teachers, { name: newTeacher.trim(), subjects: newTeacherSubjects }];
     setTeachers(updated);
-    localStorage.setItem('cobaem_teachers_v2', JSON.stringify(updated));
+    setDb(ref(db, 'config/teachers'), updated);
     setNewTeacher('');
     setNewTeacherSubjects([]);
   };
@@ -106,7 +113,7 @@ function Dashboard() {
   const handleRemoveTeacher = (indexToRemove) => {
     const updated = teachers.filter((_, idx) => idx !== indexToRemove);
     setTeachers(updated);
-    localStorage.setItem('cobaem_teachers_v2', JSON.stringify(updated));
+    setDb(ref(db, 'config/teachers'), updated);
   };
 
   // Handlers for Subjects
@@ -115,7 +122,7 @@ function Dashboard() {
     if (!newSubject.trim()) return;
     const updated = [...subjects, newSubject.trim()];
     setSubjects(updated);
-    localStorage.setItem('cobaem_subjects', JSON.stringify(updated));
+    setDb(ref(db, 'config/subjects'), updated);
     setNewSubject('');
   };
 
@@ -123,7 +130,7 @@ function Dashboard() {
     const subjectToRemove = subjects[indexToRemove];
     const updated = subjects.filter((_, idx) => idx !== indexToRemove);
     setSubjects(updated);
-    localStorage.setItem('cobaem_subjects', JSON.stringify(updated));
+    setDb(ref(db, 'config/subjects'), updated);
 
     // Also remove this subject from any teachers that teach it
     const updatedTeachers = teachers.map(t => ({
@@ -131,7 +138,7 @@ function Dashboard() {
       subjects: t.subjects.filter(s => s !== subjectToRemove)
     }));
     setTeachers(updatedTeachers);
-    localStorage.setItem('cobaem_teachers_v2', JSON.stringify(updatedTeachers));
+    setDb(ref(db, 'config/teachers'), updatedTeachers);
   };
 
   const filteredTasks = tasks.filter(task => 
