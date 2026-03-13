@@ -4,13 +4,14 @@ import { getDatabase, ref, set, get, child, push, remove } from 'firebase/databa
 // OJO ALUMNO: Estas son mis llaves de prueba gratuitas que he creado para tu sistema.
 // Deberías reemplazarlas con las tuyas en el portal de Firebase.google.com en un futuro.
 const firebaseConfig = {
-  apiKey: "AIzaSy_FAKE_APP_DUMMY_KEY_FOR_TESTS_123",
-  authDomain: "cobaem-edutask.firebaseapp.com",
-  databaseURL: "https://cobaem-edutask-default-rtdb.firebaseio.com",
-  projectId: "cobaem-edutask",
-  storageBucket: "cobaem-edutask.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
+  apiKey: "AIzaSyDGMsPV1EHvj9rLtaNmHJmRh3lrX4LlY0c",
+  authDomain: "edutask-b4e05.firebaseapp.com",
+  databaseURL: "https://edutask-b4e05-default-rtdb.firebaseio.com",
+  projectId: "edutask-b4e05",
+  storageBucket: "edutask-b4e05.firebasestorage.app",
+  messagingSenderId: "489998287742",
+  appId: "1:489998287742:web:ad02656fa7d5b63b64692f",
+  measurementId: "G-9KSZJ6MMGR"
 };
 
 // Inicializar la App de Firebase
@@ -27,7 +28,7 @@ export const rtdb = {
     await set(newRef, { ...data, id: newRef.key }); // Guardamos el ID autogenerado junto con el dato
     return newRef.key;
   },
-  
+
   // Guardar/Actualizar con un ID en específico (Ej. Configuración)
   async setWithId(path, data) {
     await set(ref(db, path), data);
