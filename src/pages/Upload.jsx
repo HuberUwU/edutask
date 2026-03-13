@@ -1,68 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { UploadCloud, File, X, Loader2, ArrowLeft, FileText, Link as LinkIcon } from 'lucide-react';
+import { Loader2, ArrowLeft, Link as LinkIcon, Calendar } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { rtdb } from '../firebase';
 
 function Upload() {
   const [linkUrl, setLinkUrl] = useState('');
-  
-  // States
   const [taskName, setTaskName] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedTeacher, setSelectedTeacher] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState('');
-  
-  const [teachers, setTeachers] = useState([]);
-  const [subjects, setSubjects] = useState([]);
-  const [availableSubjects, setAvailableSubjects] = useState([]);
-  
   const [isUploading, setIsUploading] = useState(false);
+  const [publishedTasks, setPublishedTasks] = useState([]);
+  const [loadingTasks, setLoadingTasks] = useState(true);
   
   const navigate = useNavigate();
 
-  // Load available teachers and original subjects
   useEffect(() => {
-    const storedSubjects = localStorage.getItem('cobaem_subjects');
-    if (storedSubjects) {
-      setSubjects(JSON.parse(storedSubjects));
-    } else {
-      const defaultSubjects = ['Matemáticas I', 'Taller de Lectura y Redacción', 'Química Básica', 'Informática'];
-      setSubjects(defaultSubjects);
-      localStorage.setItem('cobaem_subjects', JSON.stringify(defaultSubjects));
-    }
-
-    const storedTeachers = localStorage.getItem('cobaem_teachers_v2');
-    if (storedTeachers) {
-      setTeachers(JSON.parse(storedTeachers));
-    } else {
-      const defaultTeachers = [
-        { name: 'Ing. Juan Carlos López', subjects: ['Matemáticas I', 'Informática'] },
-        { name: 'Lic. María Elena Sánchez', subjects: ['Taller de Lectura y Redacción'] },
-        { name: 'Mtro. Pedro Gutiérrez', subjects: ['Química Básica'] }
-      ];
-      setTeachers(defaultTeachers);
-      localStorage.setItem('cobaem_teachers_v2', JSON.stringify(defaultTeachers));
-    }
-  }, []);
-
-  // When teacher changes, filter their subjects 
-  useEffect(() => {
-    if (selectedTeacher) {
-      const teacherObj = teachers.find(t => t.name === selectedTeacher);
-      if (teacherObj && teacherObj.subjects && teacherObj.subjects.length > 0) {
-        setAvailableSubjects(teacherObj.subjects);
-      } else {
-        setAvailableSubjects([]);
+    let isMounted = true;
+    const fetchTasks = async () => {
+      try {
+        const tasks = await rtdb.getAll('tasks');
+        if (isMounted) {
+          setPublishedTasks(tasks ? tasks.reverse() : []);
+          setLoadingTasks(false);
+        }
+      } catch (error) {
+        console.error("Error fetching tasks:", error);
+        if (isMounted) setLoadingTasks(false);
       }
-      setSelectedSubject(''); // reset previous selection
-    } else {
-      setAvailableSubjects([]);
-    }
-  }, [selectedTeacher, teachers]);
+    };
+    fetchTasks();
+    return () => { isMounted = false; };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!taskName || !selectedSubject || !selectedTeacher || !linkUrl) return;
+    if (!taskName || !linkUrl) return;
 
     setIsUploading(true);
     
@@ -72,8 +44,6 @@ function Upload() {
       const taskData = {
         id: taskId,
         name: taskName,
-        subject: selectedSubject,
-        teacher: selectedTeacher,
         description,
         type: 'link',
         fileName: linkUrl,
@@ -84,7 +54,6 @@ function Upload() {
         })
       };
 
-      // Guardamos la tarea en firebase bajo la ruta "tasks/" + taskId
       await rtdb.setWithId(`tasks/task_${taskId}`, taskData);
       
       setIsUploading(false);
@@ -97,7 +66,7 @@ function Upload() {
   };
 
   return (
-    <div className="upload-section animate-fade-in" style={{ minHeight: 'calc(100vh - 72px)' }}>
+    <div className="upload-section animate-fade-in" style={{ minHeight: 'calc(100vh - 72px)', paddingBottom: '4rem' }}>
       <div className="container">
         <div style={{ marginBottom: '2rem' }}>
           <Link to="/" className="btn btn-outline" style={{ display: 'inline-flex', width: 'auto', background: 'white' }}>
@@ -105,55 +74,13 @@ function Upload() {
           </Link>
         </div>
 
-        <div className="auth-card" style={{ margin: '0 auto' }}>
+        <div className="auth-card" style={{ margin: '0 auto', marginBottom: '4rem' }}>
           <div className="header">
             <h2 style={{ color: 'var(--primary)', fontSize: '1.8rem', marginBottom: '0.5rem' }}>Subir Nueva Tarea</h2>
-            <p>Completa el formulario y adjunta tu archivo para generar tu comprobante y código QR.</p>
+            <p>Sube tu trabajo o enlace y genera tu código QR.</p>
           </div>
 
           <form onSubmit={handleSubmit}>
-            
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '0.5rem' }}>
-              
-              <div className="form-group">
-                <label className="form-label" htmlFor="teacher">Profesor</label>
-                <select 
-                  id="teacher"
-                  className="form-control"
-                  value={selectedTeacher}
-                  onChange={(e) => setSelectedTeacher(e.target.value)}
-                  required
-                >
-                  <option value="" disabled>-- Seleccione Docente --</option>
-                  {teachers.map((prof, idx) => (
-                    <option key={idx} value={prof.name}>{prof.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label" htmlFor="subject">Materia</label>
-                <select 
-                  id="subject"
-                  className="form-control"
-                  value={selectedSubject}
-                  onChange={(e) => setSelectedSubject(e.target.value)}
-                  required
-                  disabled={!selectedTeacher || availableSubjects.length === 0}
-                >
-                  <option value="" disabled>-- Selecciona la Materia --</option>
-                  {availableSubjects.map((sub, idx) => (
-                    <option key={idx} value={sub}>{sub}</option>
-                  ))}
-                </select>
-                {selectedTeacher && availableSubjects.length === 0 && (
-                  <div style={{ color: '#dc2626', fontSize: '0.8rem', marginTop: '0.2rem' }}>
-                    Este profesor no tiene materias asignadas.
-                  </div>
-                )}
-              </div>
-            </div>
-
             <div className="form-group">
               <label className="form-label" htmlFor="taskName">Nombre de la Tarea / Tema</label>
               <input 
@@ -196,21 +123,71 @@ function Upload() {
               type="submit" 
               className="btn btn-primary" 
               style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
-              disabled={!taskName || !selectedSubject || !selectedTeacher || !linkUrl || isUploading}
+              disabled={!taskName || !linkUrl || isUploading}
             >
               {isUploading ? (
                 <>
-                  <Loader2 className="loader" size={20} style={{ display: 'inline-block', marginRight: '8px' }} /> Procesando archivo...
+                  <Loader2 className="loader" size={20} style={{ display: 'inline-block', marginRight: '8px' }} /> Procesando enlace...
                 </>
               ) : (
-                'Finalizar Entrega'
+                'Publicar Trabajo'
               )}
             </button>
           </form>
         </div>
+
+        {/* --- RECENT TASKS / QRs --- */}
+        <div>
+          <h2 style={{ color: 'var(--primary)', fontSize: '1.6rem', marginBottom: '1.5rem', textAlign: 'center' }}>
+            Trabajos Publicados Recientemente
+          </h2>
+
+          {loadingTasks ? (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+               <Loader2 className="loader" size={32} style={{ display: 'inline-block', color: 'var(--primary)', margin: '0 auto' }} />
+               <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>Cargando trabajos...</p>
+            </div>
+          ) : publishedTasks.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2rem', background: 'white', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+              <p style={{ color: 'var(--text-muted)' }}>Aún no hay trabajos publicados.</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
+              {publishedTasks.map(task => (
+                <div key={task.id} style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+                  <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '0.5rem', width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={task.name}>
+                    {task.name}
+                  </h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
+                    <Calendar size={14} /> {task.date.split(',')[0]}
+                  </div>
+
+                  <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
+                    <QRCodeSVG 
+                      value={task.fileName} 
+                      size={140}
+                      fgColor="#0f1c3f"
+                      bgColor="#ffffff"
+                      level="M"
+                      includeMargin={false}
+                    />
+                  </div>
+                  
+                  <div style={{ width: '100%', marginTop: 'auto', display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+                    <a href={task.fileName} target="_blank" rel="noopener noreferrer" className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', width: '100%', fontSize: '0.9rem' }}>
+                      <LinkIcon size={16} /> Abrir Enlace
+                    </a>
+                    <Link to={`/task/${task.id}`} className="btn btn-outline" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', fontSize: '0.9rem' }}>
+                      Ver Detalles
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       <style>{`
-        select option { color: initial; }
         .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(92, 27, 51, 0.2); }
       `}</style>
     </div>
