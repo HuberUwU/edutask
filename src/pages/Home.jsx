@@ -10,16 +10,18 @@ import labImg from '../assets/lab_cover.png';
 import humanitiesImg from '../assets/humanities_cover.png';
 import filesImg from '../assets/files_cover.png';
 import gearsGif from '../assets/gears.gif';
+import communitiesImg from '../assets/communities_cover.png';
 import tutorialVideo from '../assets/usopagina.mp4';
 
 const MATERIAS = [
   { name: 'Pensamiento Matemático', color: '#3b82f6', img: mathImg },
-  { name: 'Cultura Digital', color: '#8b5cf6', img: digitalImg },
+  { name: 'Laboratorio de Cultura Digital', color: '#8b5cf6', img: digitalImg },
   { name: 'Lengua y Comunicación', color: '#f59e0b', img: languageImg },
   { name: 'Conciencia Histórica', color: '#ef4444', img: historyImg },
   { name: 'Laboratorio de Investigación', color: '#10b981', img: labImg },
   { name: 'Humanidades', color: '#ec4899', img: humanitiesImg },
-  { name: 'Gestión de Archivos de Texto', color: '#6366f1', img: filesImg }
+  { name: 'Gestión de Archivos de Texto', color: '#6366f1', img: filesImg },
+  { name: 'Comunidades Virtuales', color: '#14b8a6', img: communitiesImg }
 ];
 
 function Home() {
@@ -38,7 +40,7 @@ function Home() {
             Somos una plataforma para compartir trabajos mediante códigos QR para facilitar compartir la información.
           </p>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <button 
+            <button
               type="button"
               onClick={() => {
                 const element = document.getElementById('materias');
@@ -48,8 +50,8 @@ function Home() {
                     behavior: 'smooth'
                   });
                 }
-              }} 
-              className="btn btn-primary btn-lg" 
+              }}
+              className="btn btn-primary btn-lg"
               style={{ backgroundColor: '#ffffff', color: 'var(--primary)', border: '2px solid transparent', minWidth: '200px', fontSize: '1.1rem', padding: '0.8rem 2rem' }}
             >
               Explorar Materias
@@ -153,7 +155,7 @@ function Home() {
                 Al enviar tu tarea, el sistema genera inmediatamente un código QR interactivo. Simplemente puedes presentarlo a tu profesor para que lo escanee o imprimirlo en tu cubierta física.
               </p>
             </div>
-            
+
             <div style={{ padding: '2.5rem 2rem', background: '#f8fafc', borderRadius: '16px', textAlign: 'center', border: '1px solid #e2e8f0', transition: 'transform 0.3s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <div style={{ width: '64px', height: '64px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
                 <LinkIcon size={32} />
