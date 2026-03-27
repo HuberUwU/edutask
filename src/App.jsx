@@ -43,7 +43,7 @@ const AppNavbar = () => {
             style={{ height: '40px', objectFit: 'contain' }}
             title="Logo COBAEM"
           />
-          <span style={{ marginLeft: '10px' }}>EduTasks COBAEM</span>
+          <span style={{ marginLeft: '10px' }}>EDUTASK COBAEM</span>
         </Link>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>

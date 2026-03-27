@@ -1,7 +1,3 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { BookOpen, GraduationCap, ShieldCheck, ChevronRight, QrCode, Link as LinkIcon, Layers, Play } from 'lucide-react';
-import heroBg from '../assets/hero.png';
 import mathImg from '../assets/math_cover.png';
 import digitalImg from '../assets/digital_cover.png';
 import languageImg from '../assets/language_cover.png';
@@ -30,11 +26,10 @@ function Home() {
   return (
     <div className="home-container animate-fade-in">
       {/* Hero Section */}
-      <section className="hero-section" style={{ backgroundImage: `url(${heroBg})` }}>
+      <section className="hero-section" style={{ backgroundImage: `url(${heroImages[currentHeroIndex]})`, transition: 'background-image 1s ease-in-out', position: 'relative' }}>
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <h1 style={{ fontSize: '4.5rem', marginBottom: '1rem', textShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
-            Edutask
           </h1>
           <p style={{ fontSize: '1.2rem', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
             Somos una plataforma para compartir trabajos mediante códigos QR para facilitar compartir la información.
@@ -65,8 +60,6 @@ function Home() {
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
             <h2 style={{ color: 'var(--primary)', fontSize: '2.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
-              <Play size={36} />
-              ¿Cómo usar la página?
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
               Mira este breve video tutorial para aprender a subir tus tareas y generar tu código QR en segundos.
@@ -91,7 +84,6 @@ function Home() {
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ color: 'var(--primary)', fontSize: '2.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
               <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif" alt="Earth GIF" style={{ width: '45px', borderRadius: '50%' }} />
-              Unidades de Aprendizaje Curricular
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
               Selecciona tu materia para subir trabajos, consultar lineamientos y acceder a los proyectos compartidos.
@@ -139,7 +131,6 @@ function Home() {
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ color: 'var(--primary)', fontSize: '2.5rem', marginBottom: '1rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
               <img src={gearsGif} alt="Gears GIF" style={{ width: '50px' }} />
-              ¿Por qué usar Edutask?
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '1.15rem', maxWidth: '700px', margin: '0 auto', lineHeight: '1.6' }}>
               Nuestra plataforma está fundamentada en hacer que la entrega digital de tareas sea más rápida, ligera y accesible para todos en el COBAEM.
@@ -148,9 +139,6 @@ function Home() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
             <div style={{ padding: '2.5rem 2rem', background: '#f8fafc', borderRadius: '16px', textAlign: 'center', border: '1px solid #e2e8f0', transition: 'transform 0.3s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <div style={{ width: '64px', height: '64px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                <QrCode size={32} />
-              </div>
-              <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: 'var(--text-main)', fontWeight: 'bold' }}>Códigos QR Entregables</h3>
               <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', fontSize: '0.95rem' }}>
                 Al enviar tu tarea, el sistema genera inmediatamente un código QR interactivo. Simplemente puedes presentarlo a tu profesor para que lo escanee o imprimirlo en tu cubierta física.
               </p>
@@ -158,9 +146,6 @@ function Home() {
 
             <div style={{ padding: '2.5rem 2rem', background: '#f8fafc', borderRadius: '16px', textAlign: 'center', border: '1px solid #e2e8f0', transition: 'transform 0.3s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <div style={{ width: '64px', height: '64px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                <LinkIcon size={32} />
-              </div>
-              <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: 'var(--text-main)', fontWeight: 'bold' }}>Almacenamiento por Enlaces</h3>
               <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', fontSize: '0.95rem' }}>
                 Dile adiós a los correos rebotados por espacio. Vincula tus pesados proyectos directamente desde plataformas en la nube como Google Drive, OneDrive, o Canva.
               </p>
@@ -168,9 +153,6 @@ function Home() {
 
             <div style={{ padding: '2.5rem 2rem', background: '#f8fafc', borderRadius: '16px', textAlign: 'center', border: '1px solid #e2e8f0', transition: 'transform 0.3s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <div style={{ width: '64px', height: '64px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                <Layers size={32} />
-              </div>
-              <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: 'var(--text-main)', fontWeight: 'bold' }}>Clasificación Intuitiva</h3>
               <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', fontSize: '0.95rem' }}>
                 Tus entregas y materiales del ciclo escolar se mantienen perfectamente clasificados por materia. Encuentra cualquier evidencia en cuestión de segundos, sin perder tiempo.
               </p>
