@@ -1,3 +1,8 @@
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { BookOpen, GraduationCap, ShieldCheck, ChevronRight, QrCode, Link as LinkIcon, Layers, Play } from 'lucide-react';
+import heroBg from '../assets/hero.png';
+import heroBg2 from '../assets/hero2.png';
 import mathImg from '../assets/math_cover.png';
 import digitalImg from '../assets/digital_cover.png';
 import languageImg from '../assets/language_cover.png';
@@ -22,6 +27,15 @@ const MATERIAS = [
 
 function Home() {
   const navigate = useNavigate();
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const heroImages = [heroBg, heroBg2];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prevIndex) => (prevIndex + 1) % heroImages.length);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="home-container animate-fade-in">
@@ -30,6 +44,7 @@ function Home() {
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <h1 style={{ fontSize: '4.5rem', marginBottom: '1rem', textShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
+            EDUTASK
           </h1>
           <p style={{ fontSize: '1.2rem', maxWidth: '800px', margin: '0 auto', lineHeight: '1.6' }}>
             Somos una plataforma para compartir trabajos mediante códigos QR para facilitar compartir la información.
@@ -53,6 +68,28 @@ function Home() {
             </button>
           </div>
         </div>
+
+        {/* Indicadores del Hero */}
+        <div style={{ position: 'absolute', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '0.75rem', zIndex: 10 }}>
+          {heroImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentHeroIndex(index)}
+              style={{
+                width: '14px',
+                height: '14px',
+                borderRadius: '50%',
+                border: 'none',
+                backgroundColor: currentHeroIndex === index ? '#ffffff' : 'rgba(255, 255, 255, 0.4)',
+                boxShadow: currentHeroIndex === index ? '0 0 12px 3px rgba(255, 255, 255, 0.9)' : 'none',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                padding: 0
+              }}
+              aria-label={`Cambiar a imagen ${index + 1}`}
+            />
+          ))}
+        </div>
       </section>
 
       {/* Video Tutorial Section */}
@@ -60,6 +97,8 @@ function Home() {
         <div className="container">
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
             <h2 style={{ color: 'var(--primary)', fontSize: '2.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
+              <Play size={36} className="anim-play" />
+              ¿CÓMO USAR LA PÁGINA?
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
               Mira este breve video tutorial para aprender a subir tus tareas y generar tu código QR en segundos.
@@ -84,6 +123,7 @@ function Home() {
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ color: 'var(--primary)', fontSize: '2.5rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
               <img src="https://upload.wikimedia.org/wikipedia/commons/2/2c/Rotating_earth_%28large%29.gif" alt="Earth GIF" style={{ width: '45px', borderRadius: '50%' }} />
+              UNIDADES DE APRENDIZAJE CURRICULAR
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}>
               Selecciona tu materia para subir trabajos, consultar lineamientos y acceder a los proyectos compartidos.
@@ -131,6 +171,7 @@ function Home() {
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
             <h2 style={{ color: 'var(--primary)', fontSize: '2.5rem', marginBottom: '1rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem' }}>
               <img src={gearsGif} alt="Gears GIF" style={{ width: '50px' }} />
+              ¿POR QUÉ USAR EDUTASK?
             </h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '1.15rem', maxWidth: '700px', margin: '0 auto', lineHeight: '1.6' }}>
               Nuestra plataforma está fundamentada en hacer que la entrega digital de tareas sea más rápida, ligera y accesible para todos en el COBAEM.
@@ -139,6 +180,9 @@ function Home() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
             <div style={{ padding: '2.5rem 2rem', background: '#f8fafc', borderRadius: '16px', textAlign: 'center', border: '1px solid #e2e8f0', transition: 'transform 0.3s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <div style={{ width: '64px', height: '64px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <QrCode size={32} className="anim-qrcode" />
+              </div>
+              <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: 'var(--text-main)', fontWeight: 'bold' }}>CÓDIGOS QR ENTREGABLES</h3>
               <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', fontSize: '0.95rem' }}>
                 Al enviar tu tarea, el sistema genera inmediatamente un código QR interactivo. Simplemente puedes presentarlo a tu profesor para que lo escanee o imprimirlo en tu cubierta física.
               </p>
@@ -146,6 +190,9 @@ function Home() {
 
             <div style={{ padding: '2.5rem 2rem', background: '#f8fafc', borderRadius: '16px', textAlign: 'center', border: '1px solid #e2e8f0', transition: 'transform 0.3s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <div style={{ width: '64px', height: '64px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <LinkIcon size={32} className="anim-link" />
+              </div>
+              <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: 'var(--text-main)', fontWeight: 'bold' }}>ALMACENAMIENTO POR ENLACES</h3>
               <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', fontSize: '0.95rem' }}>
                 Dile adiós a los correos rebotados por espacio. Vincula tus pesados proyectos directamente desde plataformas en la nube como Google Drive, OneDrive, o Canva.
               </p>
@@ -153,6 +200,9 @@ function Home() {
 
             <div style={{ padding: '2.5rem 2rem', background: '#f8fafc', borderRadius: '16px', textAlign: 'center', border: '1px solid #e2e8f0', transition: 'transform 0.3s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
               <div style={{ width: '64px', height: '64px', background: 'var(--primary-light)', color: 'var(--primary)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <Layers size={32} className="anim-layers" />
+              </div>
+              <h3 style={{ fontSize: '1.3rem', marginBottom: '1rem', color: 'var(--text-main)', fontWeight: 'bold' }}>CLASIFICACIÓN INTUITIVA</h3>
               <p style={{ color: 'var(--text-muted)', lineHeight: '1.6', fontSize: '0.95rem' }}>
                 Tus entregas y materiales del ciclo escolar se mantienen perfectamente clasificados por materia. Encuentra cualquier evidencia en cuestión de segundos, sin perder tiempo.
               </p>
@@ -172,6 +222,33 @@ function Home() {
           transform: translateY(-5px);
           box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
         }
+
+        @keyframes float {
+          0% { transform: translateY(0px); }
+          50% { transform: translateY(-8px); }
+          100% { transform: translateY(0px); }
+        }
+
+        @keyframes pulse-scale {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.15); }
+          100% { transform: scale(1); }
+        }
+
+        @keyframes pendulum {
+          0%, 100% { transform: rotate(-15deg); }
+          50% { transform: rotate(15deg); }
+        }
+
+        @keyframes bounce-horizontal {
+          0%, 100% { transform: translateX(0); }
+          50% { transform: translateX(5px); }
+        }
+
+        .anim-play { animation: bounce-horizontal 1.5s infinite ease-in-out; }
+        .anim-qrcode { animation: pulse-scale 2s infinite ease-in-out; }
+        .anim-link { animation: pendulum 2s infinite ease-in-out; transform-origin: center; display: inline-block; }
+        .anim-layers { animation: float 3s infinite ease-in-out; }
       `}</style>
     </div>
   );
